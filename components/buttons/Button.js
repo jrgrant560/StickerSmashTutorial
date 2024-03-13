@@ -4,7 +4,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 // this button component calls an alert when pressed
 export default function Button({ label, theme, onPress }) {
-    //checks if the theme is primary
+  //checks if the theme is primary
   if (theme === "primary") {
     return (
       <View
@@ -17,7 +17,7 @@ export default function Button({ label, theme, onPress }) {
           style={[styles.button, { backgroundColor: "#fff" }]} //overrides the background color style
           onPress={onPress}
         >
-            {/* photo icon character */}
+          {/* photo icon character */}
           <FontAwesome
             name="picture-o"
             size={18}
@@ -36,14 +36,13 @@ export default function Button({ label, theme, onPress }) {
     <View style={styles.buttonContainer}>
       <Pressable
         style={styles.button}
-        onPress={() => alert("You pressed a button.")}
+        onPress={onPress}
       >
         <Text style={styles.buttonLabel}>{label}</Text>
       </Pressable>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   buttonContainer: {

@@ -1,10 +1,14 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import { Image } from "react-native";
+import { StyleSheet, Image, Platform, Pressable, View } from "react-native";
 import { useState } from "react";
 
 import ImageViewer from "./components/ImageViewer";
-import Button from "./components/Button";
+import Button from "./components/buttons/Button";
+import CircleButton from "./components/buttons/CircleButton";
+import IconButton from "./components/buttons/IconButton";
+import EmojiPicker from "./components/emoji-sticker/EmojiPicker";
+import EmojiList from "./components/emoji-sticker/EmojiList";
+import EmojiSticker from "./components/emoji-sticker/EmojiSticker";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -12,6 +16,26 @@ const PlaceholderImage = require("./assets/images/background-image.png");
 
 export default function App() {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showAppOptions, setShowAppOptions] = useState(false);
+  const [pickedEmoji, setPickedEmoji] = useState(null);
+
+  //resets home screen (to picture select buttons)
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    setIsModalVisible(true);
+  };
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const onSaveImageAsync = async () => {
+    // "we will implement this later"
+  };
 
   //function to pick an image from the device
   const pickImageAsync = async () => {
@@ -22,6 +46,7 @@ export default function App() {
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0]);
+      setShowAppOptions(true);
     } else {
       alert("You did not select an image");
     }
@@ -35,15 +60,37 @@ export default function App() {
           placeholderImageSource={PlaceholderImage}
           selectedImage={selectedImage}
         />
+        {pickedEmoji && (
+          <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
+        )}
       </View>
-      <View style={styles.buttonsContainer}>
-        <Button
-          theme="primary"
-          label="Choose a Photo"
-          onPress={pickImageAsync}
-        />
-        <Button label="Use this Photo" />
-      </View>
+      {showAppOptions ? (
+        // shows buttons for stickers when showAppOptions is true
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton
+              icon="save-alt"
+              label="Save"
+              onPress={onSaveImageAsync}
+            />
+          </View>
+        </View>
+      ) : (
+        // shows home picture select buttons when showAppOptions is false
+        <View style={styles.buttonsContainer}>
+          <Button
+            theme="primary"
+            label="Choose a Photo"
+            onPress={() => setShowAppOptions(true)}
+          />
+          <Button label="Use this Photo" />
+        </View>
+      )}
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+      </EmojiPicker>
       <StatusBar style="auto" />
     </View>
   );
@@ -63,5 +110,13 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flex: 1 / 3,
     alignItems: "center",
+  },
+  optionsContainer: {
+    position: "absolute",
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: "center",
+    flexDirection: "row",
   },
 });
