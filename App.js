@@ -1,7 +1,10 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Image, Platform, Pressable, View } from "react-native";
-import { useState } from "react";
+import { StyleSheet, Platform, View } from "react-native";
+import { useState, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as MediaLibrary from "expo-media-library";
+import { captureRef } from "react-native-view-shot";
+import domtoimage from "dom-to-image";
 
 import ImageViewer from "./components/ImageViewer";
 import Button from "./components/buttons/Button";
@@ -20,22 +23,63 @@ export default function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showAppOptions, setShowAppOptions] = useState(false);
   const [pickedEmoji, setPickedEmoji] = useState(null);
+  const [permissionStatus, requestPermission] = MediaLibrary.usePermissions();
+
+  if (permissionStatus === null) {
+    requestPermission();
+  }
 
   //resets home screen (to picture select buttons)
   const onReset = () => {
     setShowAppOptions(false);
   };
 
+  // switch modal to visible
   const onAddSticker = () => {
     setIsModalVisible(true);
   };
 
+  // close modal
   const onModalClose = () => {
     setIsModalVisible(false);
   };
 
+  const imageRef = useRef();
+
+  // take a screenshot of the image and save it to the device
+  // NOTE: right now, this saves the image to Android's 'DCIM' folder; will need to explore further to specify a custom folder
   const onSaveImageAsync = async () => {
-    // "we will implement this later"
+
+    if (Platform.OS !== "web") { //if platform is not web, use captureRef
+      try {
+        const localUri = await captureRef(imageRef, {
+          height: 440,
+          quality: 1,
+        });
+
+        await MediaLibrary.saveToLibraryAsync(localUri);
+        if (localUri) {
+          alert("Saved!");
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    } else { //if platform is web, use domtoimage
+      try {
+        const dataUrl = await domtoimage.toJpeg(imageRef.current, {
+          quality: 0.95,
+          width: 320,
+          height: 440,
+        });
+
+        let link = document.createElement("a");
+        link.download = "sticker-smash.jpeg";
+        link.href = dataUrl;
+        link.click();
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
   //function to pick an image from the device
@@ -58,13 +102,15 @@ export default function App() {
       <View style={styles.container}>
         {/* TASK: set imageContainer to contain selectedImage, regardless of size */}
         <View style={styles.imageContainer}>
-          <ImageViewer
-            placeholderImageSource={PlaceholderImage}
-            selectedImage={selectedImage}
-          />
-          {pickedEmoji && (
-            <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
-          )}
+          <View ref={imageRef} collapsable={false}>
+            <ImageViewer
+              placeholderImageSource={PlaceholderImage}
+              selectedImage={selectedImage}
+            />
+            {pickedEmoji && (
+              <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
+            )}
+          </View>
         </View>
         {showAppOptions ? (
           // shows buttons for stickers when showAppOptions is true
@@ -85,8 +131,8 @@ export default function App() {
             <Button
               theme="primary"
               label="Choose a Photo"
-              // onPress={pickImageAsync} TEMPORARILY DISABLED WHILE ADDING EMOJI PICKER
-              onPress={() => setShowAppOptions(true)}
+              onPress={pickImageAsync}
+              // onPress={() => setShowAppOptions(true)}
             />
             <Button label="Use this Photo" />
           </View>
