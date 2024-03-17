@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, FlatList, Image, Platform, Pressable } from 'react-native';
 
+// List of all emojis available to choose from
 export default function EmojiList({ onSelect, onCloseModal }) {
   
   //array of all emoji images
