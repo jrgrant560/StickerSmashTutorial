@@ -1,5 +1,6 @@
 ## Tutorial URL: https://docs.expo.dev/tutorial/introduction/
 Also check out UI Programming section for additional features
+Onesheet for Expo: https://docs.google.com/document/d/1ISfMTweFesBtENfasKoM2Y5VKYeznU2GN2CqFqWNXPs/edit
 
 ## Further study on concepts not covered: https://docs.expo.dev/tutorial/follow-up/
 
